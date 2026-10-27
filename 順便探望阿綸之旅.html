@@ -125,6 +125,35 @@ textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;
 .confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .confirm .danger{background:var(--ink);color:var(--paper)}
 .sr{position:absolute;left:-9999px}
+/* editing */
+.head-btns{margin-left:auto;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.head-btns .done{margin-left:0}
+.ghost,.primary{padding:7px 16px;border-radius:999px;border:1.5px solid var(--ink);background:var(--paper);color:var(--ink);font-weight:500}
+.primary{background:var(--ink);color:var(--paper)}
+.ghost:hover{background:var(--soft)}
+.editor{grid-column:1/-1;display:flex;flex-direction:column;gap:18px;min-width:0}
+.ed-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px 16px}
+.editor label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:500;color:var(--muted)}
+.editor label.inline{flex-direction:row;align-items:center;gap:8px;color:var(--ink);font-size:14px}
+.editor input:not([type=checkbox]),.editor select{font:inherit;font-size:14px;padding:8px 10px;border:1.5px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink);min-width:0;width:100%}
+.editor input[type=checkbox]{width:18px;height:18px;accent-color:var(--forest)}
+.ed-label{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.ed-stops{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.ed-row{display:grid;grid-template-columns:70px minmax(0,1.3fr) minmax(0,2fr) minmax(0,1.2fr) auto;gap:6px;align-items:center;padding:8px;background:var(--soft);border-radius:4px}
+.ed-ops{display:flex;gap:4px}
+.ed-ops button{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:0}
+.ed-ops button:disabled{opacity:.35}
+.ed-swap{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.ed-swap label{flex:1 1 240px}
+.hint{font-size:13px;color:var(--muted)}
+.ed-actions{display:flex;gap:10px;border-top:1.5px solid var(--line);padding-top:16px}
+@media (max-width:760px){.ed-row{grid-template-columns:70px minmax(0,1fr) auto}.ed-row input:nth-child(3),.ed-row input:nth-child(4){grid-column:1/-1}.ed-row .ed-ops{grid-column:3;grid-row:1}}
+.banner{background:var(--ink);color:var(--paper);border-radius:4px;padding:14px 18px;display:flex;gap:12px 20px;align-items:center;flex-wrap:wrap}
+.banner p{margin:0;flex:1 1 320px;font-size:14px}
+.banner-btns{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.banner .primary{background:var(--coral);border-color:var(--coral);color:var(--paper)}
+.banner .ghost{background:transparent;border-color:var(--paper);color:var(--paper)}
+
 
 /* scene motion */
 .drift{animation:drift 14s ease-in-out infinite alternate}
@@ -144,6 +173,10 @@ textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;
 </defs></svg>
 
 <div class="wrap">
+  <div class="banner" id="banner" hidden>
+    <p>你在這台裝置改了行程，家人還看不到。改好後按「下載 trip.js」，把檔案放進 travel 資料夾取代舊的，再請 Claude 推上 GitHub。</p>
+    <div class="banner-btns" id="banner-btns"></div>
+  </div>
   <section class="hero" id="hero" aria-roledescription="輪播" aria-label="每日行程">
     <svg class="scene" id="scene" viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
     <div class="top">
@@ -198,70 +231,16 @@ textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;
   </div>
 </div>
 
+<script src="trip.js"></script>
 <script>
 const q=s=>"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s);
-const TPE="悅心旅 高級三人房（台北）",TXG="新驛旅店 豪華三人房（台中）";
-const DAYS=[
- {id:"d1",date:"3/20（六）",en:"Taipei",kind:"arrive",sky:["#fbf7f0","#cfe6f2"],stay:TPE,blurb:"Sat 20 Mar · Landing at Taoyuan T1 · Ximending",
-  title:"抵達台北，輕鬆暖身",tags:["台北"],stops:[
-  ["14:10","抵達桃園機場第一航廈","入境、領行李約 1 小時，順便買悠遊卡、網卡"],
-  ["15:30","機場捷運直達車 → 台北車站","約 40 分鐘，每人 160",q("桃園機場捷運 機場第一航廈站")],
-  ["16:30","入住 悅心旅","放行李、休息一下"],
-  ["18:00","晚餐：西門町","走路吃小吃，早點回飯店睡",q("西門町")]],
-  tip:"搭飛機那天別排太滿，晚上早點休息，明天才有體力。"},
- {id:"d2",date:"3/21（日）",en:"Taipei 101",kind:"tower",sky:["#fbf8f2","#d6ecf3"],stay:TPE,blurb:"Sun 21 Mar · CKS Memorial Hall · Yongkang St · Taipei 101",
-  title:"台北經典：中正紀念堂、永康街、101",tags:["台北"],stops:[
-  ["09:30","中正紀念堂","整點有衛兵交接（09:00–17:00）",q("中正紀念堂")],
-  ["11:30","午餐：永康街","鼎泰豐、牛肉麵、芒果冰都在這一帶",q("永康街")],
-  ["13:30","回飯店午休",""],
-  ["16:30","台北 101 觀景台","傍晚上去看日落和夜景；假日人多，建議先網路買票",q("台北101觀景台")],
-  ["19:00","晚餐：信義區或饒河夜市","饒河夜市胡椒餅很有名",q("饒河街觀光夜市")]]},
- {id:"d3",date:"3/22（一）",en:"Jiufen",kind:"lantern",sky:["#fcf3ea","#f6c9a8"],stay:TPE,blurb:"Mon 22 Mar · Shifen sky lanterns · Jiufen old street",
-  title:"九份、十分一日遊",tags:["新北","整天"],stops:[
-  ["08:30","出發往瑞芳","台鐵到瑞芳約 50 分鐘，或包車一天（三人最省力）",q("瑞芳車站")],
-  ["10:00","十分老街、放天燈","十分瀑布步道平緩，約走 15 分鐘",q("十分老街")],
-  ["13:00","九份老街","午餐吃芋圓、魚丸湯；階梯多，慢慢走",q("九份老街")],
-  ["16:30","阿妹茶樓一帶看黃昏","九份傍晚點燈最漂亮",q("阿妹茶樓")],
-  ["18:30","搭車回台北","1062 公車或回瑞芳轉台鐵"]],
-  tip:"故宮週一休館，所以把它排到 3/25。九份山上風大，外套要帶。"},
- {id:"d4",date:"3/23（二）",en:"Taichung",kind:"train",sky:["#fbf8f1","#cde7ef"],stay:TXG,blurb:"Tue 23 Mar · High speed rail south · Miyahara · Fengjia",
-  title:"高鐵南下台中",tags:["台中"],stops:[
-  ["09:30","退房，大行李寄放悅心旅","只帶一晚的小包去台中"],
-  ["10:30","高鐵 台北 → 台中","約 1 小時；早鳥票約乘車日前 29 天開賣",q("高鐵台北站")],
-  ["12:00","宮原眼科、第四信用合作社","午餐順便吃冰淇淋",q("宮原眼科")],
-  ["14:00","入住 新驛旅店、午休","確認分店地址"],
-  ["16:00","審計新村、勤美草悟道","文青小店，路平好走",q("審計新村")],
-  ["18:30","逢甲夜市","台中最大夜市，人多請牽好包包",q("逢甲夜市")]]},
- {id:"d5",date:"3/24（三）",en:"Sun Moon Lake",kind:"lake",sky:["#f8f8f1","#c6e3ea"],stay:TPE,blurb:"Wed 24 Mar · Boat ride · Ita Thao · back to Taipei",
-  title:"日月潭一日遊，晚上回台北",tags:["南投","整天"],opt:true,stops:[
-  ["08:00","高鐵台中站 → 日月潭","南投客運直達約 1.5 小時",q("高鐵台中站 南投客運")],
-  ["10:00","日月潭遊湖","船票可在碼頭買，一票玩水社、玄光寺、伊達邵",q("日月潭水社碼頭")],
-  ["12:30","午餐：伊達邵","邵族風味餐、總統魚",q("伊達邵老街")],
-  ["14:00","向山遊客中心 或 纜車","體力夠再去",q("向山遊客中心")],
-  ["16:00","回高鐵台中站 → 台北","20:00 前回到悅心旅入住"]],
-  alt:"不去日月潭的話：上午睡飽、去高美濕地看夕陽，或在台中市區吃吃喝喝，下午再搭高鐵回台北。"},
- {id:"d6",date:"3/25（四）",en:"Palace Museum",kind:"palace",sky:["#fbf7ef","#d9ead9"],stay:TPE,blurb:"Thu 25 Mar · National Palace Museum · Shilin",
-  title:"故宮、士林",tags:["台北"],stops:[
-  ["09:30","國立故宮博物院","看翠玉白菜、肉形石；館內可借輪椅",q("國立故宮博物院")],
-  ["12:30","午餐：故宮晶華或附近",""],
-  ["14:00","士林官邸","花園很適合散步，春天玫瑰季前後",q("士林官邸")],
-  ["16:00","回飯店休息",""],
-  ["18:00","士林夜市","大雞排、生煎包",q("士林夜市")]]},
- {id:"d7",date:"3/26（五）",en:"Beitou",kind:"spring",sky:["#fcf4ea","#f7c3a0"],stay:TPE,blurb:"Fri 26 Mar · Hot springs · Tamsui sunset",
-  title:"北投溫泉、淡水夕陽",tags:["台北"],stops:[
-  ["10:00","北投溫泉博物館、地熱谷","捷運新北投站，步行可到",q("北投溫泉博物館")],
-  ["12:00","泡湯＋午餐","很多溫泉飯店有包廂湯屋，一家人一起泡最自在",q("新北投 湯屋")],
-  ["15:30","淡水老街","阿給、魚丸、鐵蛋",q("淡水老街")],
-  ["17:30","漁人碼頭 情人橋看夕陽","從老街搭船或公車過去",q("淡水漁人碼頭")],
-  ["19:30","回台北，整理行李","伴手禮最後採買可在台北車站"]]},
- {id:"d8",date:"3/27（六）",en:"Homeward",kind:"home",sky:["#fbf7f0","#d3e8f3"],stay:"回家囉，MH367 15:10 起飛",blurb:"Sat 27 Mar · Taipei Main Station · Flight MH367 15:10",
-  title:"回家",tags:["台北"],stops:[
-  ["09:00","早餐、退房","阜杭豆漿要排隊，想吃得早點去",q("阜杭豆漿")],
-  ["11:00","台北車站 → 機場捷運","直達車約 40 分鐘",q("台北車站 機場捷運")],
-  ["12:00","抵達桃園 T1，辦理登機","起飛前 3 小時到最安心"],
-  ["15:10","MH367 起飛",""]],
-  tip:"伴手禮（鳳梨酥、牛軋糖）大多可放託運；液體超過 100ml 不能手提。"}
-];
+const SKY={arrive:["#fbf7f0","#cfe6f2"],tower:["#fbf8f2","#d6ecf3"],lantern:["#fcf3ea","#f6c9a8"],train:["#fbf8f1","#cde7ef"],lake:["#f8f8f1","#c6e3ea"],palace:["#fbf7ef","#d9ead9"],spring:["#fcf4ea","#f7c3a0"],home:["#fbf7f0","#d3e8f3"]};
+const KINDS={arrive:"飛機抵達",tower:"101 大樓",lantern:"天燈老街",train:"高鐵",lake:"湖與遊船",palace:"宮殿",spring:"溫泉夕陽",home:"飛機起飛"};
+const SLOT=["id","date","dt","stay"];
+const EDIT_KEY="tw-trip-edits-v1";
+const BASE=JSON.parse(JSON.stringify(window.TRIP_DAYS||[]));
+let DAYS=JSON.parse(JSON.stringify(BASE));
+try{const e=JSON.parse(localStorage.getItem(EDIT_KEY)||"null");if(Array.isArray(e)&&e.length===BASE.length){if(JSON.stringify(e)===JSON.stringify(BASE))localStorage.removeItem(EDIT_KEY);else DAYS=e}}catch(e){}
 const TODO=["訂悅心旅兩段住宿，問連住優惠和 3/23 寄放行李","訂新驛旅店豪華三人房，確認含不含早餐","2 月下旬買高鐵早鳥票（台北⇄台中）","網路先買台北 101 觀景台票","決定去不去日月潭；九份要不要包車","申請網卡或 eSIM","換新台幣現金（夜市、小吃多半收現金）","買旅遊平安險"];
 const PACK=["護照（效期 6 個月以上）","機票、訂房確認單（截圖存手機）","兩孔扁頭轉接頭","薄外套、折傘","好走的鞋","牙刷、牙膏（台灣旅宿不提供一次性備品）","常備藥、慢性病藥","行動電源（只能手提，不能託運）","泡湯用毛巾、換洗衣物"];
 
@@ -324,7 +303,7 @@ function landmark(k,r,anim){
   }return ""}
 function scene(d,i,opt={}){
   const r=rng(i*97+13),gid="g"+d.id+(opt.tag||"");
-  let s=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${d.sky[0]}"/><stop offset="1" stop-color="${d.sky[1]}"/></linearGradient></defs>
+  let s=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${SKY[d.kind][0]}"/><stop offset="1" stop-color="${SKY[d.kind][1]}"/></linearGradient></defs>
   <rect width="800" height="520" fill="url(#${gid})"/>
   <path d="M0 400 Q160 330 320 380 T640 360 T800 370 V520 H0Z" fill="#a8cf8e"/>`;
   s+=landmark(d.kind,r,!opt.small);
@@ -347,38 +326,112 @@ const pad=n=>String(n).padStart(2,"0");
 
 function show(i,{scroll=false}={}){
   cur=(i+DAYS.length)%DAYS.length;const d=DAYS[cur];
-  $("hero").style.background=d.sky[0];
+  $("hero").style.background=SKY[d.kind][0];
   const sc=$("scene");sc.classList.add("fade");
   setTimeout(()=>{sc.innerHTML=scene(d,cur);sc.classList.remove("fade")},sc.innerHTML?220:0);
   $("hNo").textContent=`Day ${pad(cur+1)} / ${pad(DAYS.length)} · ${d.date}`;
-  $("hEn").textContent=d.en;$("hZh").textContent=d.title;$("hBlurb").textContent=d.blurb;$("hStay").textContent=d.stay;
+  $("hEn").textContent=d.en;$("hZh").textContent=d.title;$("hBlurb").textContent=d.dt+" · "+d.blurb;$("hStay").textContent=d.stay;
   $("next").innerHTML=[1,2].map(o=>{const j=(cur+o)%DAYS.length,n=DAYS[j];
-    return `<button class="thumb" data-i="${j}" aria-label="跳到 ${n.date} ${n.title}"><svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice">${scene(n,j,{small:1,tag:"t"})}</svg><span>D${j+1} · ${n.en}</span></button>`}).join("");
+    return `<button class="thumb" data-i="${j}" aria-label="跳到 ${n.date} ${n.title}"><svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice">${scene(n,j,{small:1,tag:"t"})}</svg><span>D${j+1} · ${esc(n.en)}</span></button>`}).join("");
   $("dots").querySelectorAll("button").forEach((b,k)=>{b.classList.toggle("on",k===cur);b.setAttribute("aria-selected",k===cur)});
   document.querySelectorAll(".card").forEach((c,k)=>c.classList.toggle("on",k===cur));
   renderSheet();
   try{history.replaceState(null,"","#"+d.id)}catch(e){}
   if(scroll)$("hero").scrollIntoView({block:"start"});
 }
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const clone=o=>JSON.parse(JSON.stringify(o));
+let editing=false,draft=null;
+function persist(){
+  try{if(JSON.stringify(DAYS)===JSON.stringify(BASE))localStorage.removeItem(EDIT_KEY);else localStorage.setItem(EDIT_KEY,JSON.stringify(DAYS))}catch(e){}
+  updateBanner();
+}
 function renderSheet(){
+  if(editing)return renderEditor();
   const d=DAYS[cur],el=$("sheet");
-  el.innerHTML=`<div class="sheet-head"><div class="dayno">${pad(cur+1)}</div><div><div class="lab">${d.date} · ${d.en}</div><h2>${d.title}</h2>
-    <div class="tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join("")}${d.opt?'<span class="tag opt">可選</span>':""}</div></div>
-    <label class="done"><input type="checkbox" id="done-cb" ${st[d.id+"-done"]?"checked":""}>這天玩完了</label></div>
-    <ol class="tl">${d.stops.map(([t,w,h,m])=>`<li><span class="t">${t}</span><span class="pin"></span><div><span class="what">${w}</span>${m?`<a class="map" href="${m}" target="_blank" rel="noopener">MAP ↗</a>`:""}${h?`<span class="how">${h}</span>`:""}</div></li>`).join("")}</ol>
+  el.innerHTML=`<div class="sheet-head"><div class="dayno">${pad(cur+1)}</div><div><div class="lab">${d.date} · ${esc(d.en)}</div><h2>${esc(d.title)}</h2>
+    <div class="tags">${d.tags.map(t=>`<span class="tag">${esc(t)}</span>`).join("")}${d.opt?'<span class="tag opt">可選</span>':""}</div></div>
+    <div class="head-btns"><label class="done"><input type="checkbox" id="done-cb" ${st[d.id+"-done"]?"checked":""}>這天玩完了</label><button type="button" class="ghost" id="edit-btn">編輯這天</button></div></div>
+    <ol class="tl">${d.stops.length?d.stops.map(([t,w,h,m])=>`<li><span class="t">${esc(t)}</span><span class="pin"></span><div><span class="what">${esc(w)}</span>${m?`<a class="map" href="${q(m)}" target="_blank" rel="noopener">MAP ↗</a>`:""}${h?`<span class="how">${esc(h)}</span>`:""}</div></li>`).join(""):'<li><span></span><span></span><div class="how">這天還沒有排景點，按「編輯這天」新增。</div></li>'}</ol>
     <div class="aside">
-      <div class="note-box"><b>今晚住</b>${d.stay}</div>
-      ${d.alt?`<div class="note-box"><b>備案</b>${d.alt}</div>`:""}
-      ${d.tip?`<div class="note-box"><b>提醒</b>${d.tip}</div>`:""}
+      <div class="note-box"><b>今晚住</b>${esc(d.stay)}</div>
+      ${d.alt?`<div class="note-box"><b>備案</b>${esc(d.alt)}</div>`:""}
+      ${d.tip?`<div class="note-box"><b>提醒</b>${esc(d.tip)}</div>`:""}
       <label class="sr" for="note-ta">${d.date} 備註</label><textarea id="note-ta" placeholder="備註：想吃的店、訂位時間、改了什麼…"></textarea>
     </div>`;
   const ta=$("note-ta");ta.value=st[d.id+"-note"]||"";
   ta.addEventListener("input",()=>{if(ta.value)st[d.id+"-note"]=ta.value;else delete st[d.id+"-note"];save()});
   $("done-cb").addEventListener("change",e=>{if(e.target.checked)st[d.id+"-done"]=1;else delete st[d.id+"-done"];save();renderAll()});
+  $("edit-btn").onclick=()=>{editing=true;draft=clone(DAYS[cur]);renderSheet();$("sheet").scrollIntoView({block:"start"})};
+}
+function renderEditor(){
+  const d=draft,el=$("sheet");
+  el.innerHTML=`<div class="sheet-head"><div class="dayno">${pad(cur+1)}</div><div><div class="lab">${d.date} · 編輯中</div><h2>改這一天的行程</h2></div></div>
+  <div class="editor">
+    <div class="ed-grid">
+      <label>中文標題<input id="e-title" value="${esc(d.title)}"></label>
+      <label>英文大標<input id="e-en" value="${esc(d.en)}"></label>
+      <label>英文小字<input id="e-blurb" value="${esc(d.blurb)}"></label>
+      <label>標籤（用、分開）<input id="e-tags" value="${esc(d.tags.join("、"))}"></label>
+      <label>插畫<select id="e-kind">${Object.entries(KINDS).map(([k,v])=>`<option value="${k}" ${k===d.kind?"selected":""}>${v}</option>`).join("")}</select></label>
+      <label class="inline"><input type="checkbox" id="e-opt" ${d.opt?"checked":""}>標成「可選」</label>
+    </div>
+    <div><div class="ed-label">景點（時間、地點、說明、地圖搜尋字）</div><div class="ed-stops" id="e-stops"></div>
+      <button type="button" class="ghost" id="e-add">＋ 新增一站</button></div>
+    <div class="ed-grid">
+      <label>備案<textarea id="e-alt">${esc(d.alt)}</textarea></label>
+      <label>提醒<textarea id="e-tip">${esc(d.tip)}</textarea></label>
+    </div>
+    <div class="ed-swap"><label>跟另一天整天對調<select id="e-swap">${DAYS.map((x,i)=>i===cur?"":`<option value="${i}">D${i+1} ${x.date} ${esc(x.title)}</option>`).join("")}</select></label>
+      <button type="button" class="ghost" id="e-swap-btn">對調</button><span class="hint">日期和當晚住宿不會跟著換。</span></div>
+    <div class="ed-actions"><button type="button" class="primary" id="e-save">存檔</button><button type="button" class="ghost" id="e-cancel">取消</button></div>
+  </div>`;
+  const bind=(id,fn)=>$(id).addEventListener("input",e=>fn(e.target));
+  bind("e-title",t=>d.title=t.value);bind("e-en",t=>d.en=t.value);bind("e-blurb",t=>d.blurb=t.value);
+  bind("e-tags",t=>d.tags=t.value.split(/[、,，\s]+/).filter(Boolean));
+  $("e-kind").onchange=e=>d.kind=e.target.value;$("e-opt").onchange=e=>d.opt=e.target.checked;
+  bind("e-alt",t=>d.alt=t.value);bind("e-tip",t=>d.tip=t.value);
+  renderStops();
+  $("e-add").onclick=()=>{d.stops.push(["","","",""]);renderStops();$("e-s"+(d.stops.length-1)+"-0").focus()};
+  $("e-cancel").onclick=()=>{editing=false;draft=null;renderSheet()};
+  $("e-save").onclick=()=>{d.stops=d.stops.filter(r=>r.some(v=>v.trim()));DAYS[cur]=d;editing=false;draft=null;persist();renderAll();show(cur)};
+  $("e-swap-btn").onclick=()=>{
+    const j=+$("e-swap").value;DAYS[cur]=d;
+    const A=DAYS[cur],B=DAYS[j];
+    Object.keys(A).forEach(k=>{if(!SLOT.includes(k)){const t=A[k];A[k]=B[k];B[k]=t}});
+    editing=false;draft=null;persist();renderAll();show(cur);
+  };
+}
+function renderStops(){
+  const d=draft,box=$("e-stops"),ph=["時間","地點","說明","地圖搜尋字（可空白）"];
+  box.innerHTML=d.stops.map((r,i)=>`<div class="ed-row">${r.map((v,k)=>`<input id="e-s${i}-${k}" data-i="${i}" data-k="${k}" value="${esc(v)}" placeholder="${ph[k]}" aria-label="第 ${i+1} 站 ${ph[k]}">`).join("")}
+    <span class="ed-ops"><button type="button" data-op="up" data-i="${i}" aria-label="往上移" ${i?"":"disabled"}>↑</button><button type="button" data-op="down" data-i="${i}" aria-label="往下移" ${i<d.stops.length-1?"":"disabled"}>↓</button><button type="button" data-op="del" data-i="${i}" aria-label="刪除這站">✕</button></span></div>`).join("");
+  box.oninput=e=>{const t=e.target;if(t.dataset.k!==undefined)d.stops[+t.dataset.i][+t.dataset.k]=t.value};
+  box.onclick=e=>{const b=e.target.closest("button");if(!b)return;const i=+b.dataset.i,s=d.stops;
+    if(b.dataset.op==="up")[s[i-1],s[i]]=[s[i],s[i-1]];
+    if(b.dataset.op==="down")[s[i+1],s[i]]=[s[i],s[i+1]];
+    if(b.dataset.op==="del")s.splice(i,1);
+    renderStops()};
+}
+function updateBanner(){
+  const dirty=JSON.stringify(DAYS)!==JSON.stringify(BASE);$("banner").hidden=!dirty;
+  if(dirty)bannerUI();
+}
+function bannerUI(){
+  $("banner-btns").innerHTML='<button type="button" class="primary" id="dl-btn">下載 trip.js</button><button type="button" class="ghost" id="undo-btn">復原成網站版本</button>';
+  $("dl-btn").onclick=()=>{
+    const txt="// 行程資料。網頁上按「編輯這天」改完後，按「下載 trip.js」取代這個檔案再推上 GitHub。\n// 每一站：[時間, 地點, 說明, 地圖搜尋字]\nwindow.TRIP_DAYS = "+JSON.stringify(DAYS,null,2)+";\n";
+    const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"text/javascript"}));a.download="trip.js";document.body.appendChild(a);a.click();a.remove();
+  };
+  $("undo-btn").onclick=()=>{
+    $("banner-btns").innerHTML='<span>確定丟掉這台裝置上的修改？</span><button type="button" class="primary" id="undo-yes">丟掉</button><button type="button" class="ghost" id="undo-no">取消</button>';
+    $("undo-yes").onclick=()=>{DAYS=clone(BASE);editing=false;persist();renderAll();show(cur)};
+    $("undo-no").onclick=bannerUI;
+  };
 }
 function renderAll(){
   $("all").innerHTML=DAYS.map((d,i)=>`<button class="card${i===cur?" on":""}" data-i="${i}"><svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${scene(d,i,{small:1,tag:"c"})}</svg>
-    <div>${st[d.id+"-done"]?'<span class="ok">✓ 玩完了</span>':""}<span class="lab">D${i+1} · ${d.date}</span><strong>${d.title}</strong></div></button>`).join("");
+    <div>${st[d.id+"-done"]?'<span class="ok">✓ 玩完了</span>':""}<span class="lab">D${i+1} · ${d.date}</span><strong>${esc(d.title)}</strong></div></button>`).join("");
 }
 function list(name,items){
   const ul=$(name);ul.innerHTML="";
@@ -398,7 +451,7 @@ $("dots").addEventListener("click",e=>{const b=e.target.closest("button");if(b)s
 $("prev").onclick=()=>show(cur-1);$("nxt").onclick=()=>show(cur+1);
 $("next").addEventListener("click",e=>{const b=e.target.closest(".thumb");if(b)show(+b.dataset.i)});
 $("all").addEventListener("click",e=>{const b=e.target.closest(".card");if(b)show(+b.dataset.i,{scroll:true})});
-document.addEventListener("keydown",e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.key==="ArrowLeft")show(cur-1);if(e.key==="ArrowRight")show(cur+1)});
+document.addEventListener("keydown",e=>{if(/INPUT|TEXTAREA|SELECT/.test(e.target.tagName))return;if(e.key==="ArrowLeft")show(cur-1);if(e.key==="ArrowRight")show(cur+1)});
 let sx=null;
 $("hero").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
 $("hero").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)show(cur+(dx<0?1:-1));sx=null});
@@ -413,7 +466,7 @@ function resetUI(){
     $("no").onclick=resetUI;
   };
 }
-function boot(){renderAll();list("todo",TODO);list("pack",PACK);show(cur)}
+function boot(){renderAll();list("todo",TODO);list("pack",PACK);show(cur);updateBanner()}
 boot();resetUI();
 </script>
 </body></html>
