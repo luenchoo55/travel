@@ -17,13 +17,21 @@
 header,#ledger section,.notes{background:var(--surface);border-radius:4px;padding:20px clamp(16px,3vw,24px)}
 #ledger{display:flex;flex-direction:column;gap:20px}
 .stat,.trip{border-radius:4px}
-.stat.main{background:var(--ink);color:var(--surface)}
+.summary .stat.main{background:var(--ink);color:var(--surface)}
 .stat.main .k,.stat.main .pp{color:#d9d2c9}
 .stat.main .myr{color:#ffb08f}
-h1{color:var(--jade);text-transform:uppercase;letter-spacing:.01em}
+h1{color:var(--jade);text-transform:uppercase;letter-spacing:.01em;font-family:var(--f-body)!important;font-weight:900!important}
 .foot{color:#3a1608!important}
 .foot a{color:var(--surface)!important}
 input.actual{background:var(--surface)!important}
+header{position:relative}
+.head-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.burger{width:40px;height:40px;border:0;background:none;display:grid;place-content:center;gap:5px;padding:0;flex:none;cursor:pointer}
+.burger i{display:block;width:24px;height:3px;background:var(--ink);border-radius:2px}
+.burger:focus-visible{outline:3px solid var(--jade);outline-offset:2px}
+.menu{position:absolute;top:66px;right:16px;z-index:6;background:var(--surface);border-radius:6px;box-shadow:0 18px 40px -12px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;min-width:170px}
+.menu a{padding:8px 12px;border-radius:4px;color:var(--ink);text-decoration:none;font-weight:500}
+.menu a:hover{background:var(--jade-soft)}
 body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6}
 .wrap{max-width:860px;margin:0 auto;padding-block:28px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
 h1{font-family:var(--f-display);font-weight:400;font-size:clamp(34px,6vw,52px);line-height:1.1;margin:0;text-wrap:balance}
@@ -77,7 +85,10 @@ button.danger{border-color:var(--over);color:var(--over)}
 
 <div class="wrap">
   <header>
-    <h1>順便探望阿綸之旅預算</h1>
+    <div class="head-row"><h1>順便探望阿綸之旅預算</h1><button class="burger" id="burger" aria-label="選單" aria-expanded="false"><i></i><i></i><i></i></button></div>
+    <nav class="menu" id="menu" hidden>
+      <a href="順便探望阿綸之旅.html#sheet">當天行程</a><a href="順便探望阿綸之旅.html#allsec">全部 8 天</a><a href="順便探望阿綸之旅.html#todo-sec">出發前待辦</a><a href="順便探望阿綸之旅.html#info-sec">在台灣要知道的事</a><a href="#">預算表</a>
+    </nav>
     <p class="sub">三人同行，2027 年 3 月 20 日到 27 日，台北 6 晚＋台中 1 晚。金額以新台幣計，旁邊附馬幣換算；預估是參考範圍，「實際」欄填新台幣。</p>
     <div class="rate"><label for="rateIn">匯率：1 馬幣 =</label><input id="rateIn" class="actual" inputmode="decimal" value="7.96"><span>新台幣</span><span class="calc">（2026 年 10 月參考值，可自行修改）</span></div>
   </header>
@@ -115,6 +126,9 @@ button.danger{border-color:var(--over);color:var(--over)}
 </div>
 
 <script>
+const burger=document.getElementById("burger"),menu=document.getElementById("menu");
+burger.onclick=()=>{menu.hidden=!menu.hidden;burger.setAttribute("aria-expanded",!menu.hidden)};
+menu.addEventListener("click",()=>{menu.hidden=true;burger.setAttribute("aria-expanded",false)});
 const GROUPS=[
  {name:"住宿",rows:[
   {id:"h1",item:"台北 悅心旅 高級三人房",calc:"3/20–3/23，3 晚 × 每晚約 2,600–3,500",lo:7800,hi:10500},
