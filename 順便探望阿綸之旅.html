@@ -1,5 +1,5 @@
 <!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>爸媽姐姐台灣行程</title>
+<title>順便探望阿綸之旅</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -146,11 +146,11 @@ textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;
   <section class="hero" id="hero" aria-roledescription="輪播" aria-label="每日行程">
     <svg class="scene" id="scene" viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
     <div class="top">
-      <span class="lab">爸媽姐姐台灣行 · 2027</span>
+      <span class="lab">順便探望阿綸之旅 · 2027</span>
       <button class="burger" id="burger" aria-label="選單" aria-expanded="false"><i></i><i></i><i></i></button>
     </div>
     <nav class="menu" id="menu" hidden>
-      <a href="#sheet">當天行程</a><a href="#allsec">全部 8 天</a><a href="#todo-sec">出發前待辦</a><a href="#info-sec">在台灣要知道的事</a><a href="爸媽姐姐台灣行預算.html">預算表</a>
+      <a href="#sheet">當天行程</a><a href="#allsec">全部 8 天</a><a href="#todo-sec">出發前待辦</a><a href="#info-sec">在台灣要知道的事</a><a href="順便探望阿綸之旅預算.html">預算表</a>
     </nav>
     <div class="text" aria-live="polite">
       <div class="lab" id="hNo"></div>
@@ -192,7 +192,7 @@ textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;
   </div>
 
   <div class="foot">
-    <span>勾選和備註存在這台裝置的瀏覽器裡，換手機或電腦不會同步。花費請看 <a href="爸媽姐姐台灣行預算.html">預算表</a>。</span>
+    <span>勾選和備註存在這台裝置的瀏覽器裡，換手機或電腦不會同步。花費請看 <a href="順便探望阿綸之旅預算.html">預算表</a>。</span>
     <div class="confirm" id="resetBox"></div>
   </div>
 </div>
@@ -207,7 +207,7 @@ const DAYS=[
   ["15:30","機場捷運直達車 → 台北車站","約 40 分鐘，每人 160",q("桃園機場捷運 機場第一航廈站")],
   ["16:30","入住 悅心旅","放行李、休息一下"],
   ["18:00","晚餐：西門町","走路吃小吃，早點回飯店睡",q("西門町")]],
-  tip:"搭飛機那天別排太滿，爸媽晚上早點休息，明天才有體力。"},
+  tip:"搭飛機那天別排太滿，晚上早點休息，明天才有體力。"},
  {id:"d2",date:"3/21（日）",en:"Taipei 101",kind:"tower",sky:["#fbf8f2","#d6ecf3"],stay:TPE,blurb:"Sun 21 Mar · CKS Memorial Hall · Yongkang St · Taipei 101",
   title:"台北經典：中正紀念堂、永康街、101",tags:["台北"],stops:[
   ["09:30","中正紀念堂","整點有衛兵交接（09:00–17:00）",q("中正紀念堂")],
@@ -262,7 +262,7 @@ const DAYS=[
   tip:"伴手禮（鳳梨酥、牛軋糖）大多可放託運；液體超過 100ml 不能手提。"}
 ];
 const TODO=["訂悅心旅兩段住宿，問連住優惠和 3/23 寄放行李","訂新驛旅店豪華三人房，確認含不含早餐","2 月下旬買高鐵早鳥票（台北⇄台中）","網路先買台北 101 觀景台票","決定去不去日月潭；九份要不要包車","申請網卡或 eSIM","換新台幣現金（夜市、小吃多半收現金）","買旅遊平安險"];
-const PACK=["護照（效期 6 個月以上）","機票、訂房確認單（截圖存手機）","兩孔扁頭轉接頭","薄外套、折傘","好走的鞋","牙刷、牙膏（台灣旅宿不提供一次性備品）","常備藥、爸媽的慢性病藥","行動電源（只能手提，不能託運）","泡湯用毛巾、換洗衣物"];
+const PACK=["護照（效期 6 個月以上）","機票、訂房確認單（截圖存手機）","兩孔扁頭轉接頭","薄外套、折傘","好走的鞋","牙刷、牙膏（台灣旅宿不提供一次性備品）","常備藥、慢性病藥","行動電源（只能手提，不能託運）","泡湯用毛巾、換洗衣物"];
 
 /* ---------- illustrated scenes ---------- */
 function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
