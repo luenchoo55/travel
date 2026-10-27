@@ -1,0 +1,418 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>爸媽姐姐台灣行程</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@400;500;600&family=Noto+Sans+TC:wght@400;500;700;900&display=swap">
+<style>
+/* Layout: coral ground, one big white "poster" card per day as a carousel (illustrated scene, giant green title, round arrows, dots, next-stop thumbnails), then the day's timeline sheet, all-days grid and checklists */
+:root{
+  --coral:#ef6a3f; --coral-deep:#c94a22; --paper:#ffffff; --ink:#1d1b19; --muted:#6e6760;
+  --forest:#1f5b2b; --line:#ece5dc; --soft:#fbf6ef;
+  --f-display:"Anton","Noto Sans TC","Microsoft JhengHei",Impact,sans-serif;
+  --f-label:"Oswald","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  --f-body:"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--coral);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.65}
+.wrap{max-width:1080px;margin:0 auto;padding-block:28px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:28px}
+a{color:var(--coral-deep)}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--forest);outline-offset:2px}
+.lab{font-family:var(--f-label);text-transform:uppercase;letter-spacing:.12em;font-size:12px}
+
+/* ===== hero poster ===== */
+.hero{position:relative;background:var(--paper);border-radius:4px;overflow:hidden;height:clamp(500px,58vw,620px);box-shadow:0 30px 60px -30px rgba(80,20,0,.45);touch-action:pan-y}
+.scene{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .45s ease}
+.scene.fade{opacity:0}
+.top{position:absolute;top:22px;left:28px;right:28px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+.top .lab{color:var(--ink)}
+.burger{width:40px;height:40px;border:0;background:none;display:grid;place-content:center;gap:5px;padding:0}
+.burger i{display:block;width:24px;height:3px;background:var(--ink);border-radius:2px}
+.menu{position:absolute;top:66px;right:24px;z-index:6;background:var(--paper);border-radius:6px;box-shadow:0 18px 40px -12px rgba(0,0,0,.35);padding:8px;display:flex;flex-direction:column;min-width:170px}
+.menu a{padding:8px 12px;border-radius:4px;color:var(--ink);text-decoration:none;font-weight:500}
+.menu a:hover{background:var(--soft)}
+.text{position:absolute;top:72px;left:28px;z-index:2;max-width:min(380px,calc(100% - 56px))}
+.text .lab{color:var(--muted)}
+.big{font-family:var(--f-display);font-weight:400;color:var(--forest);font-size:clamp(46px,7.4vw,84px);line-height:.95;margin:6px 0 10px;text-transform:uppercase;letter-spacing:.01em;text-wrap:balance}
+.zh{font-weight:900;font-size:clamp(17px,2.2vw,21px);color:var(--ink);margin:0 0 8px;text-wrap:balance}
+.blurb{font-family:var(--f-label);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink);margin:0;max-width:30ch;line-height:1.55}
+.side{position:absolute;top:84px;right:28px;width:190px;z-index:2;display:flex;flex-direction:column;gap:14px}
+.stay{border-top:2px solid var(--ink);padding-top:8px}
+.stay .lab{font-weight:600;font-size:13px;color:var(--ink)}
+.stay p{margin:4px 0 0;font-size:13px;line-height:1.5;color:var(--ink)}
+.next{position:absolute;right:20px;bottom:20px;z-index:2;display:flex;flex-direction:column;gap:10px}
+.thumb{position:relative;width:150px;aspect-ratio:3/2;max-width:100%;border:3px solid var(--paper);border-radius:6px;overflow:hidden;padding:0;background:var(--soft);box-shadow:0 10px 20px -10px rgba(0,0,0,.4)}
+.thumb svg{width:100%;height:100%;display:block}
+.thumb span{position:absolute;left:0;right:0;bottom:0;padding:14px 8px 5px;font-family:var(--f-label);font-weight:600;font-size:11px;letter-spacing:.1em;color:#fff;text-align:center;text-transform:uppercase;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.thumb:hover{transform:translateY(-2px)}
+.ctrl{position:absolute;left:28px;bottom:24px;z-index:3;display:flex;gap:12px}
+.round{width:52px;height:52px;border-radius:50%;border:0;display:grid;place-items:center;box-shadow:0 8px 18px -8px rgba(0,0,0,.5)}
+.round.prev{background:var(--paper);color:var(--ink)}
+.round.nxt{background:var(--ink);color:var(--paper)}
+.round svg{width:22px;height:22px}
+.dots{position:absolute;left:50%;bottom:36px;transform:translateX(-50%);z-index:3;display:flex;gap:8px;align-items:center}
+.dots button{width:9px;height:9px;border-radius:9px;border:0;padding:0;background:rgba(255,255,255,.75);box-shadow:0 1px 3px rgba(0,0,0,.35);transition:width .3s}
+.dots button.on{width:30px;background:var(--paper)}
+@media (max-width:760px){
+  .hero{height:640px}
+  .scene{top:auto;height:60%}
+  .side,.next{display:none}
+  .text{top:64px;left:20px}
+  .top{left:20px;right:16px}
+  .ctrl{left:20px;bottom:20px}
+  .dots{left:auto;right:20px;transform:none;bottom:40px}
+}
+
+/* ===== day sheet ===== */
+.sheet{background:var(--paper);border-radius:4px;padding:26px clamp(18px,4vw,40px);display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:28px 40px}
+.sheet-head{grid-column:1/-1;display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;border-bottom:3px solid var(--ink);padding-bottom:14px}
+.dayno{font-family:var(--f-display);font-size:64px;line-height:.9;color:var(--coral)}
+.sheet-head h2{margin:0;font-weight:900;font-size:24px;color:var(--forest);line-height:1.3}
+.sheet-head .lab{color:var(--muted)}
+.tags{display:flex;gap:6px;margin-top:4px;flex-wrap:wrap}
+.tag{font-size:12px;padding:1px 10px;border-radius:999px;border:1.5px solid var(--forest);color:var(--forest);font-weight:500}
+.tag.opt{border-color:var(--coral-deep);color:var(--coral-deep)}
+.done{margin-left:auto;display:flex;align-items:center;gap:8px;font-weight:500;cursor:pointer;user-select:none}
+.done input{width:20px;height:20px;accent-color:var(--forest)}
+ol.tl{list-style:none;margin:0;padding:0;min-width:0}
+ol.tl li{display:grid;grid-template-columns:62px 18px minmax(0,1fr);gap:0 12px;position:relative;padding-bottom:16px}
+ol.tl li::before{content:"";position:absolute;left:82px;top:12px;bottom:-4px;width:2px;background:var(--line)}
+ol.tl li:last-child::before{display:none}
+.t{font-family:var(--f-label);font-weight:500;font-size:16px;letter-spacing:.04em;padding-top:1px}
+.pin{width:14px;height:14px;border-radius:50%;background:var(--ink);margin-top:6px;position:relative;z-index:1;box-shadow:0 0 0 4px var(--paper)}
+li:first-child .pin{background:var(--coral)}
+.what{font-weight:700}
+.how{display:block;font-size:13.5px;color:var(--muted)}
+.map{display:inline-block;margin-left:8px;font-family:var(--f-label);font-size:11px;letter-spacing:.12em;padding:0 8px;border-radius:999px;background:var(--ink);color:var(--paper);text-decoration:none;vertical-align:2px;font-weight:500}
+.map:hover{background:var(--coral-deep)}
+.aside{display:flex;flex-direction:column;gap:14px;min-width:0}
+.note-box{background:var(--soft);border-radius:4px;padding:12px 14px;font-size:14px}
+.note-box b{display:block;font-family:var(--f-label);letter-spacing:.12em;font-weight:600;font-size:12px;color:var(--coral-deep)}
+textarea{width:100%;min-height:96px;resize:vertical;font:inherit;font-size:14px;padding:10px 12px;border:1.5px solid var(--line);border-radius:4px;background:var(--paper);color:var(--ink)}
+@media (max-width:760px){.sheet{grid-template-columns:minmax(0,1fr)}.done{margin-left:0}}
+
+/* ===== sections on coral ===== */
+.sec-title{font-family:var(--f-display);color:var(--paper);font-size:clamp(30px,5vw,44px);line-height:1;margin:0;text-transform:uppercase;display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.sec-title small{font-family:var(--f-body);font-weight:900;font-size:17px;color:var(--ink)}
+.all{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.card{background:var(--paper);border:0;border-radius:4px;padding:0;text-align:left;overflow:hidden;display:flex;flex-direction:column;color:var(--ink);transition:transform .2s}
+.card:hover{transform:translateY(-3px)}
+.card.on{outline:3px solid var(--ink);outline-offset:2px}
+.card svg{width:100%;aspect-ratio:16/10;display:block}
+.card div{padding:10px 12px 12px}
+.card .lab{color:var(--muted)}
+.card strong{display:block;font-weight:700;line-height:1.4}
+.card .ok{float:right;font-family:var(--f-label);font-size:11px;letter-spacing:.1em;color:var(--forest);font-weight:600}
+@media (max-width:760px){.all{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.panel{background:var(--paper);border-radius:4px;padding:20px 22px;min-width:0}
+.panel h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:26px;color:var(--forest);text-transform:uppercase;display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.panel h3 small{font-family:var(--f-body);font-weight:900;font-size:15px;color:var(--ink);margin-right:auto}
+.panel h3 .count{font-family:var(--f-label);font-size:14px;color:var(--muted)}
+.panel ul{list-style:none;margin:12px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+.panel li label{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.panel li input{margin-top:4px;width:17px;height:17px;flex:none;accent-color:var(--forest)}
+.panel li input:checked+span{color:var(--muted);text-decoration:line-through}
+.info{list-style:disc!important;padding-left:1.2em!important;max-width:75ch}
+.foot{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center;color:#3a1608;font-size:13px}
+.foot a{color:var(--paper);font-weight:700}
+.foot button,.confirm button{padding:7px 14px;border-radius:999px;border:0;background:var(--paper);color:var(--ink)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.confirm .danger{background:var(--ink);color:var(--paper)}
+.sr{position:absolute;left:-9999px}
+
+/* scene motion */
+.drift{animation:drift 14s ease-in-out infinite alternate}
+.float{animation:float 5s ease-in-out infinite alternate;transform-box:fill-box}
+.steam{animation:steam 4s ease-in-out infinite;transform-box:fill-box}
+@keyframes drift{to{transform:translateX(28px)}}
+@keyframes float{to{transform:translateY(-14px)}}
+@keyframes steam{0%{opacity:0;transform:translateY(10px)}40%{opacity:.8}100%{opacity:0;transform:translateY(-30px)}}
+@media (prefers-reduced-motion:reduce){.drift,.float,.steam{animation:none}.scene{transition:none}html{scroll-behavior:auto}}
+</style></head><body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="daisy" viewBox="-10 -10 20 20"><g fill="#fff" stroke="#e4ddd0" stroke-width=".4">
+    <ellipse cx="0" cy="-5" rx="2.4" ry="4.6"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(45)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(90)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(135)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(180)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(225)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(270)"/><ellipse cx="0" cy="-5" rx="2.4" ry="4.6" transform="rotate(315)"/></g>
+    <circle r="2.8" fill="#f2b52c"/></symbol>
+  <symbol id="bud" viewBox="-10 -10 20 20"><circle r="8" fill="#f07a3a"/><circle r="4" fill="#f9b56a"/></symbol>
+</defs></svg>
+
+<div class="wrap">
+  <section class="hero" id="hero" aria-roledescription="輪播" aria-label="每日行程">
+    <svg class="scene" id="scene" viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true"></svg>
+    <div class="top">
+      <span class="lab">爸媽姐姐台灣行 · 2027</span>
+      <button class="burger" id="burger" aria-label="選單" aria-expanded="false"><i></i><i></i><i></i></button>
+    </div>
+    <nav class="menu" id="menu" hidden>
+      <a href="#sheet">當天行程</a><a href="#allsec">全部 8 天</a><a href="#todo-sec">出發前待辦</a><a href="#info-sec">在台灣要知道的事</a><a href="爸媽姐姐台灣行預算.html">預算表</a>
+    </nav>
+    <div class="text" aria-live="polite">
+      <div class="lab" id="hNo"></div>
+      <h1 class="big" id="hEn"></h1>
+      <p class="zh" id="hZh"></p>
+      <p class="blurb" id="hBlurb"></p>
+    </div>
+    <div class="side"><div class="stay"><div class="lab">今晚住</div><p id="hStay"></p></div></div>
+    <div class="next" id="next"></div>
+    <div class="ctrl">
+      <button class="round prev" id="prev" aria-label="前一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <button class="round nxt" id="nxt" aria-label="下一天"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+    <div class="dots" id="dots" role="tablist" aria-label="選擇日期"></div>
+  </section>
+
+  <section class="sheet" id="sheet"></section>
+
+  <section id="allsec" style="display:flex;flex-direction:column;gap:14px">
+    <h2 class="sec-title">8 Days <small>3/20（六）– 3/27（六）・台北 6 晚＋台中 1 晚</small></h2>
+    <div class="all" id="all"></div>
+  </section>
+
+  <div class="cols" id="todo-sec">
+    <div class="panel"><h3>Before you go <small>出發前待辦</small><span class="count" id="c-todo"></span></h3><ul id="todo"></ul></div>
+    <div class="panel"><h3>Packing <small>行李清單</small><span class="count" id="c-pack"></span></h3><ul id="pack"></ul></div>
+  </div>
+
+  <div class="panel" id="info-sec">
+    <h3>Good to know <small>在台灣要知道的事</small></h3>
+    <ul class="info">
+      <li>去程 MH366 3/20 14:10 抵桃園 T1；回程 MH367 3/27 15:10 從桃園 T1 起飛。</li>
+      <li>3 月下旬台北約 15–23°C，常下雨、早晚涼，帶薄外套和折傘；台中通常比較晴。</li>
+      <li>台灣插座是兩孔扁頭（A/B 型），電壓 110V。馬來西亞三孔方頭插頭要帶轉接頭，手機、相機充電器多半支援 110V。</li>
+      <li>悠遊卡可搭捷運、公車、台鐵，也能在便利商店付款；機場捷運站就能買。</li>
+      <li>緊急電話：警察 110，救護、消防 119。觀光諮詢熱線 0800-011-765（24 小時，有中英日語）。</li>
+      <li>捷運站內和車廂禁止飲食，連喝水、嚼口香糖都會被罰。</li>
+    </ul>
+  </div>
+
+  <div class="foot">
+    <span>勾選和備註存在這台裝置的瀏覽器裡，換手機或電腦不會同步。花費請看 <a href="爸媽姐姐台灣行預算.html">預算表</a>。</span>
+    <div class="confirm" id="resetBox"></div>
+  </div>
+</div>
+
+<script>
+const q=s=>"https://www.google.com/maps/search/?api=1&query="+encodeURIComponent(s);
+const TPE="悅心旅 高級三人房（台北）",TXG="新驛旅店 豪華三人房（台中）";
+const DAYS=[
+ {id:"d1",date:"3/20（六）",en:"Taipei",kind:"arrive",sky:["#fbf7f0","#cfe6f2"],stay:TPE,blurb:"Sat 20 Mar · Landing at Taoyuan T1 · Ximending",
+  title:"抵達台北，輕鬆暖身",tags:["台北"],stops:[
+  ["14:10","抵達桃園機場第一航廈","入境、領行李約 1 小時，順便買悠遊卡、網卡"],
+  ["15:30","機場捷運直達車 → 台北車站","約 40 分鐘，每人 160",q("桃園機場捷運 機場第一航廈站")],
+  ["16:30","入住 悅心旅","放行李、休息一下"],
+  ["18:00","晚餐：西門町","走路吃小吃，早點回飯店睡",q("西門町")]],
+  tip:"搭飛機那天別排太滿，爸媽晚上早點休息，明天才有體力。"},
+ {id:"d2",date:"3/21（日）",en:"Taipei 101",kind:"tower",sky:["#fbf8f2","#d6ecf3"],stay:TPE,blurb:"Sun 21 Mar · CKS Memorial Hall · Yongkang St · Taipei 101",
+  title:"台北經典：中正紀念堂、永康街、101",tags:["台北"],stops:[
+  ["09:30","中正紀念堂","整點有衛兵交接（09:00–17:00）",q("中正紀念堂")],
+  ["11:30","午餐：永康街","鼎泰豐、牛肉麵、芒果冰都在這一帶",q("永康街")],
+  ["13:30","回飯店午休",""],
+  ["16:30","台北 101 觀景台","傍晚上去看日落和夜景；假日人多，建議先網路買票",q("台北101觀景台")],
+  ["19:00","晚餐：信義區或饒河夜市","饒河夜市胡椒餅很有名",q("饒河街觀光夜市")]]},
+ {id:"d3",date:"3/22（一）",en:"Jiufen",kind:"lantern",sky:["#fcf3ea","#f6c9a8"],stay:TPE,blurb:"Mon 22 Mar · Shifen sky lanterns · Jiufen old street",
+  title:"九份、十分一日遊",tags:["新北","整天"],stops:[
+  ["08:30","出發往瑞芳","台鐵到瑞芳約 50 分鐘，或包車一天（三人最省力）",q("瑞芳車站")],
+  ["10:00","十分老街、放天燈","十分瀑布步道平緩，約走 15 分鐘",q("十分老街")],
+  ["13:00","九份老街","午餐吃芋圓、魚丸湯；階梯多，慢慢走",q("九份老街")],
+  ["16:30","阿妹茶樓一帶看黃昏","九份傍晚點燈最漂亮",q("阿妹茶樓")],
+  ["18:30","搭車回台北","1062 公車或回瑞芳轉台鐵"]],
+  tip:"故宮週一休館，所以把它排到 3/25。九份山上風大，外套要帶。"},
+ {id:"d4",date:"3/23（二）",en:"Taichung",kind:"train",sky:["#fbf8f1","#cde7ef"],stay:TXG,blurb:"Tue 23 Mar · High speed rail south · Miyahara · Fengjia",
+  title:"高鐵南下台中",tags:["台中"],stops:[
+  ["09:30","退房，大行李寄放悅心旅","只帶一晚的小包去台中"],
+  ["10:30","高鐵 台北 → 台中","約 1 小時；早鳥票約乘車日前 29 天開賣",q("高鐵台北站")],
+  ["12:00","宮原眼科、第四信用合作社","午餐順便吃冰淇淋",q("宮原眼科")],
+  ["14:00","入住 新驛旅店、午休","確認分店地址"],
+  ["16:00","審計新村、勤美草悟道","文青小店，路平好走",q("審計新村")],
+  ["18:30","逢甲夜市","台中最大夜市，人多請牽好包包",q("逢甲夜市")]]},
+ {id:"d5",date:"3/24（三）",en:"Sun Moon Lake",kind:"lake",sky:["#f8f8f1","#c6e3ea"],stay:TPE,blurb:"Wed 24 Mar · Boat ride · Ita Thao · back to Taipei",
+  title:"日月潭一日遊，晚上回台北",tags:["南投","整天"],opt:true,stops:[
+  ["08:00","高鐵台中站 → 日月潭","南投客運直達約 1.5 小時",q("高鐵台中站 南投客運")],
+  ["10:00","日月潭遊湖","船票可在碼頭買，一票玩水社、玄光寺、伊達邵",q("日月潭水社碼頭")],
+  ["12:30","午餐：伊達邵","邵族風味餐、總統魚",q("伊達邵老街")],
+  ["14:00","向山遊客中心 或 纜車","體力夠再去",q("向山遊客中心")],
+  ["16:00","回高鐵台中站 → 台北","20:00 前回到悅心旅入住"]],
+  alt:"不去日月潭的話：上午睡飽、去高美濕地看夕陽，或在台中市區吃吃喝喝，下午再搭高鐵回台北。"},
+ {id:"d6",date:"3/25（四）",en:"Palace Museum",kind:"palace",sky:["#fbf7ef","#d9ead9"],stay:TPE,blurb:"Thu 25 Mar · National Palace Museum · Shilin",
+  title:"故宮、士林",tags:["台北"],stops:[
+  ["09:30","國立故宮博物院","看翠玉白菜、肉形石；館內可借輪椅",q("國立故宮博物院")],
+  ["12:30","午餐：故宮晶華或附近",""],
+  ["14:00","士林官邸","花園很適合散步，春天玫瑰季前後",q("士林官邸")],
+  ["16:00","回飯店休息",""],
+  ["18:00","士林夜市","大雞排、生煎包",q("士林夜市")]]},
+ {id:"d7",date:"3/26（五）",en:"Beitou",kind:"spring",sky:["#fcf4ea","#f7c3a0"],stay:TPE,blurb:"Fri 26 Mar · Hot springs · Tamsui sunset",
+  title:"北投溫泉、淡水夕陽",tags:["台北"],stops:[
+  ["10:00","北投溫泉博物館、地熱谷","捷運新北投站，步行可到",q("北投溫泉博物館")],
+  ["12:00","泡湯＋午餐","很多溫泉飯店有包廂湯屋，一家人一起泡最自在",q("新北投 湯屋")],
+  ["15:30","淡水老街","阿給、魚丸、鐵蛋",q("淡水老街")],
+  ["17:30","漁人碼頭 情人橋看夕陽","從老街搭船或公車過去",q("淡水漁人碼頭")],
+  ["19:30","回台北，整理行李","伴手禮最後採買可在台北車站"]]},
+ {id:"d8",date:"3/27（六）",en:"Homeward",kind:"home",sky:["#fbf7f0","#d3e8f3"],stay:"回家囉，MH367 15:10 起飛",blurb:"Sat 27 Mar · Taipei Main Station · Flight MH367 15:10",
+  title:"回家",tags:["台北"],stops:[
+  ["09:00","早餐、退房","阜杭豆漿要排隊，想吃得早點去",q("阜杭豆漿")],
+  ["11:00","台北車站 → 機場捷運","直達車約 40 分鐘",q("台北車站 機場捷運")],
+  ["12:00","抵達桃園 T1，辦理登機","起飛前 3 小時到最安心"],
+  ["15:10","MH367 起飛",""]],
+  tip:"伴手禮（鳳梨酥、牛軋糖）大多可放託運；液體超過 100ml 不能手提。"}
+];
+const TODO=["訂悅心旅兩段住宿，問連住優惠和 3/23 寄放行李","訂新驛旅店豪華三人房，確認含不含早餐","2 月下旬買高鐵早鳥票（台北⇄台中）","網路先買台北 101 觀景台票","決定去不去日月潭；九份要不要包車","申請網卡或 eSIM","換新台幣現金（夜市、小吃多半收現金）","買旅遊平安險"];
+const PACK=["護照（效期 6 個月以上）","機票、訂房確認單（截圖存手機）","兩孔扁頭轉接頭","薄外套、折傘","好走的鞋","牙刷、牙膏（台灣旅宿不提供一次性備品）","常備藥、爸媽的慢性病藥","行動電源（只能手提，不能託運）","泡湯用毛巾、換洗衣物"];
+
+/* ---------- illustrated scenes ---------- */
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const cloud=(x,y,s,anim)=>`<g class="${anim?"drift":""}" transform="translate(${x} ${y}) scale(${s})" fill="#fff"><ellipse cx="0" cy="0" rx="46" ry="18"/><ellipse cx="-24" cy="-10" rx="22" ry="18"/><ellipse cx="14" cy="-16" rx="26" ry="22"/></g>`;
+const plane=(x,y,rot)=>`<g transform="translate(${x} ${y}) rotate(${rot})">
+ <polygon points="-10,-10 30,-10 -22,-60 -46,-60" fill="#c8d2d8"/>
+ <rect x="-140" y="-17" width="280" height="34" rx="17" fill="#fff" stroke="#c9d3d9" stroke-width="2"/>
+ <polygon points="-140,-12 -108,-12 -128,-66 -146,-66" fill="#ef6a3f"/>
+ <rect x="-120" y="2" width="250" height="5" fill="#1f5b2b"/>
+ ${Array.from({length:12},(_,i)=>`<circle cx="${-95+i*17}" cy="-5" r="3.2" fill="#3c5560"/>`).join("")}
+ <path d="M122 -10 Q136 -8 136 -2 L118 -2Z" fill="#3c5560"/>
+ <polygon points="-24,6 30,6 -38,74 -66,74" fill="#e4eaee" stroke="#c9d3d9" stroke-width="2"/></g>`;
+function landmark(k,r,anim){
+  const A=c=>anim?c:"";
+  switch(k){
+  case "arrive":return cloud(150,160,1,anim)+cloud(640,110,.8,anim)+plane(470,200,8)+
+    Array.from({length:9},(_,i)=>`<rect x="${230+i*44}" y="${388-(i*37%5)*14}" width="34" height="${90}" fill="${i%2?"#9fb9c4":"#b7cbd3"}"/>`).join("");
+  case "home":return cloud(180,120,.9,anim)+cloud(620,190,1.1,anim)+plane(480,190,-14)+`<rect x="160" y="420" width="480" height="8" fill="#9aa9ae"/>`;
+  case "tower":{let s=cloud(170,120,.8,anim)+cloud(660,90,.7,anim);
+    [[300,330,50,"#b9cdd4"],[360,360,40,"#a9c1c9"],[560,350,46,"#b3c8cf"],[620,380,56,"#c3d4da"]].forEach(([x,y,w,c])=>s+=`<rect x="${x}" y="${y}" width="${w}" height="${470-y}" fill="${c}"/>`);
+    s+=`<line x1="470" y1="34" x2="470" y2="104" stroke="#4d6b72" stroke-width="3"/><rect x="454" y="98" width="32" height="24" fill="#7fa6ad" stroke="#4d6b72" stroke-width="1.5"/>`;
+    for(let i=0;i<8;i++){const y=360-i*30;s+=`<polygon points="446,${y} 494,${y} 503,${y-30} 437,${y-30}" fill="${i%2?"#8ab0b6":"#79a2a9"}" stroke="#4d6b72" stroke-width="1.5"/>`}
+    return s+`<rect x="426" y="360" width="88" height="110" fill="#6d939a" stroke="#4d6b72" stroke-width="1.5"/><rect x="452" y="400" width="36" height="70" fill="#4d6b72"/>`}
+  case "lantern":{let s="";
+    for(let i=0;i<7;i++){const x=150+i*90+r()*30,y=70+r()*170,sz=.7+r()*.6;
+      s+=`<g class="${A("float")}" style="animation-delay:${-i*.8}s"><g transform="translate(${x} ${y}) scale(${sz})"><polygon points="-14,-20 14,-20 18,20 -18,20" fill="#ffc46b"/><polygon points="-9,-14 9,-14 12,16 -12,16" fill="#fff0c2"/><rect x="-6" y="20" width="12" height="4" fill="#d9822b"/></g></g>`}
+    for(let i=0;i<7;i++){const x=470+i*48,y=330-i*14;s+=`<rect x="${x}" y="${y}" width="44" height="${470-y}" fill="${i%2?"#d8c2a6":"#c9ae8c"}"/><polygon points="${x-6},${y} ${x+50},${y} ${x+22},${y-22}" fill="#5a3b2e"/><rect x="${x+14}" y="${y+16}" width="14" height="14" fill="#ffd27a"/>`}
+    s+=`<path d="M440 300 Q600 340 800 250" fill="none" stroke="#5a3b2e" stroke-width="2"/>`;
+    for(let i=0;i<6;i++){const t=i/5,x=460+t*320,y=302+Math.sin(t*Math.PI)*22-t*50;s+=`<ellipse cx="${x}" cy="${y+14}" rx="10" ry="13" fill="#d8322a"/><rect x="${x-6}" y="${y}" width="12" height="3" fill="#2b1a14"/>`}
+    return s}
+  case "train":return cloud(200,120,.9,anim)+cloud(620,80,.7,anim)+
+    `<rect x="0" y="452" width="800" height="7" fill="#7b7f84"/>
+     <path d="M150 448 H640 Q730 448 750 422 Q730 392 640 390 H150 Z" fill="#fff" stroke="#c4c9cc" stroke-width="2"/>
+     <path d="M150 428 H726 L736 434 H150 Z" fill="#ef6a3f"/>
+     <path d="M676 396 Q720 400 734 418 L690 418 Z" fill="#2f4550"/>
+     ${Array.from({length:18},(_,i)=>`<rect x="${172+i*27}" y="402" width="18" height="14" rx="2" fill="#2f4550"/>`).join("")}
+     <line x1="400" y1="390" x2="400" y2="448" stroke="#c4c9cc" stroke-width="2"/>`;
+  case "lake":return cloud(210,110,.8,anim)+
+    `<polygon points="200,400 330,250 420,330 520,220 640,330 760,260 800,300 800,400" fill="#7fa79a"/>
+     <polygon points="0,400 120,310 260,400" fill="#6c9888"/>
+     <g transform="translate(596 236)"><rect x="-6" y="-4" width="12" height="20" fill="#e9dcc2"/><polygon points="-12,-4 12,-4 0,-14" fill="#7a4a35"/><rect x="-5" y="-26" width="10" height="12" fill="#e9dcc2"/><polygon points="-10,-26 10,-26 0,-36" fill="#7a4a35"/></g>
+     <rect x="0" y="398" width="800" height="70" fill="#76b8cc"/>
+     ${Array.from({length:7},(_,i)=>`<rect x="${60+i*110}" y="${410+(i%3)*14}" width="60" height="3" rx="1.5" fill="#bfe2ec"/>`).join("")}
+     <g transform="translate(420 426)"><path d="M-46 0 H46 L34 16 H-34 Z" fill="#fff" stroke="#9fb2b8" stroke-width="2"/><rect x="-24" y="-16" width="42" height="16" fill="#ef6a3f"/><rect x="-18" y="-12" width="10" height="7" fill="#fff"/><rect x="-2" y="-12" width="10" height="7" fill="#fff"/></g>`;
+  case "palace":return cloud(170,110,.8,anim)+cloud(680,140,.7,anim)+
+    `<rect x="230" y="398" width="500" height="30" fill="#ebe3d0"/><rect x="250" y="428" width="460" height="42" fill="#e2d8c2"/>
+     ${Array.from({length:6},(_,i)=>`<rect x="430" y="${428+i*7}" width="100" height="3" fill="#cbbfa5"/>`).join("")}
+     <rect x="300" y="318" width="360" height="80" fill="#f4eedd"/>
+     ${Array.from({length:9},(_,i)=>`<rect x="${312+i*42}" y="324" width="8" height="74" fill="#b8463a"/>`).join("")}
+     <path d="M262 324 Q300 320 330 284 H630 Q660 320 698 324 Z" fill="#2f7b6a"/><rect x="326" y="278" width="308" height="8" fill="#e3b23c"/>
+     <rect x="380" y="232" width="200" height="46" fill="#f4eedd"/>
+     <path d="M350 238 Q380 234 400 204 H560 Q580 234 610 238 Z" fill="#2f7b6a"/><rect x="396" y="198" width="168" height="7" fill="#e3b23c"/>`;
+  case "spring":{let s=`<circle cx="640" cy="330" r="70" fill="#f8a35d" opacity=".9"/>`+cloud(200,120,.8,anim)+
+    `<ellipse cx="420" cy="440" rx="250" ry="38" fill="#9fd3c8"/><ellipse cx="420" cy="436" rx="210" ry="26" fill="#bfe5dc"/>`;
+    for(let i=0;i<12;i++){const a=i/12*Math.PI*2;s+=`<ellipse cx="${420+Math.cos(a)*250}" cy="${440+Math.sin(a)*38}" rx="${16+r()*10}" ry="${10+r()*6}" fill="#8f938f"/>`}
+    for(let i=0;i<5;i++){const x=300+i*60;s+=`<path class="${A("steam")}" style="animation-delay:${-i*.7}s" d="M${x} 420 q-14 -30 0 -60 q14 -30 0 -60" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round" opacity=".75"/>`}
+    return s}
+  }return ""}
+function scene(d,i,opt={}){
+  const r=rng(i*97+13),gid="g"+d.id+(opt.tag||"");
+  let s=`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${d.sky[0]}"/><stop offset="1" stop-color="${d.sky[1]}"/></linearGradient></defs>
+  <rect width="800" height="520" fill="url(#${gid})"/>
+  <path d="M0 400 Q160 330 320 380 T640 360 T800 370 V520 H0Z" fill="#a8cf8e"/>`;
+  s+=landmark(d.kind,r,!opt.small);
+  s+=`<path d="M0 450 Q200 420 400 448 T800 440 V520 H0Z" fill="#7fb562"/><rect y="478" width="800" height="42" fill="#5f9a47"/>`;
+  const n=opt.small?40:90;
+  for(let k=0;k<n;k++){const x=r()*820-10,y=448+r()*70,h=18+r()*26;s+=`<path d="M${x} ${y+20} q3 -${h} ${6+r()*6} -${h+6} q-1 ${h} 2 ${h+6}Z" fill="${r()>.5?"#4f8a3a":"#6aa84f"}"/>`}
+  for(let k=0;k<n;k++){const x=r()*820-10,y=452+r()*64,sz=14+r()*18+(y-452)*.35;
+    s+=`<use href="#${r()>.82?"bud":"daisy"}" x="${(x-sz/2).toFixed(1)}" y="${(y-sz/2).toFixed(1)}" width="${sz.toFixed(1)}" height="${sz.toFixed(1)}"/>`}
+  return s}
+
+/* ---------- state ---------- */
+const KEY="tw-trip-plan-v1";
+let st={};
+try{st=JSON.parse(localStorage.getItem(KEY)||"{}")||{}}catch(e){st={}}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const $=id=>document.getElementById(id);
+let cur=0;
+const hashI=DAYS.findIndex(d=>"#"+d.id===location.hash);if(hashI>=0)cur=hashI;
+const pad=n=>String(n).padStart(2,"0");
+
+function show(i,{scroll=false}={}){
+  cur=(i+DAYS.length)%DAYS.length;const d=DAYS[cur];
+  $("hero").style.background=d.sky[0];
+  const sc=$("scene");sc.classList.add("fade");
+  setTimeout(()=>{sc.innerHTML=scene(d,cur);sc.classList.remove("fade")},sc.innerHTML?220:0);
+  $("hNo").textContent=`Day ${pad(cur+1)} / ${pad(DAYS.length)} · ${d.date}`;
+  $("hEn").textContent=d.en;$("hZh").textContent=d.title;$("hBlurb").textContent=d.blurb;$("hStay").textContent=d.stay;
+  $("next").innerHTML=[1,2].map(o=>{const j=(cur+o)%DAYS.length,n=DAYS[j];
+    return `<button class="thumb" data-i="${j}" aria-label="跳到 ${n.date} ${n.title}"><svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice">${scene(n,j,{small:1,tag:"t"})}</svg><span>D${j+1} · ${n.en}</span></button>`}).join("");
+  $("dots").querySelectorAll("button").forEach((b,k)=>{b.classList.toggle("on",k===cur);b.setAttribute("aria-selected",k===cur)});
+  document.querySelectorAll(".card").forEach((c,k)=>c.classList.toggle("on",k===cur));
+  renderSheet();
+  try{history.replaceState(null,"","#"+d.id)}catch(e){}
+  if(scroll)$("hero").scrollIntoView({block:"start"});
+}
+function renderSheet(){
+  const d=DAYS[cur],el=$("sheet");
+  el.innerHTML=`<div class="sheet-head"><div class="dayno">${pad(cur+1)}</div><div><div class="lab">${d.date} · ${d.en}</div><h2>${d.title}</h2>
+    <div class="tags">${d.tags.map(t=>`<span class="tag">${t}</span>`).join("")}${d.opt?'<span class="tag opt">可選</span>':""}</div></div>
+    <label class="done"><input type="checkbox" id="done-cb" ${st[d.id+"-done"]?"checked":""}>這天玩完了</label></div>
+    <ol class="tl">${d.stops.map(([t,w,h,m])=>`<li><span class="t">${t}</span><span class="pin"></span><div><span class="what">${w}</span>${m?`<a class="map" href="${m}" target="_blank" rel="noopener">MAP ↗</a>`:""}${h?`<span class="how">${h}</span>`:""}</div></li>`).join("")}</ol>
+    <div class="aside">
+      <div class="note-box"><b>今晚住</b>${d.stay}</div>
+      ${d.alt?`<div class="note-box"><b>備案</b>${d.alt}</div>`:""}
+      ${d.tip?`<div class="note-box"><b>提醒</b>${d.tip}</div>`:""}
+      <label class="sr" for="note-ta">${d.date} 備註</label><textarea id="note-ta" placeholder="備註：想吃的店、訂位時間、改了什麼…"></textarea>
+    </div>`;
+  const ta=$("note-ta");ta.value=st[d.id+"-note"]||"";
+  ta.addEventListener("input",()=>{if(ta.value)st[d.id+"-note"]=ta.value;else delete st[d.id+"-note"];save()});
+  $("done-cb").addEventListener("change",e=>{if(e.target.checked)st[d.id+"-done"]=1;else delete st[d.id+"-done"];save();renderAll()});
+}
+function renderAll(){
+  $("all").innerHTML=DAYS.map((d,i)=>`<button class="card${i===cur?" on":""}" data-i="${i}"><svg viewBox="0 0 800 520" preserveAspectRatio="xMidYMax slice" aria-hidden="true">${scene(d,i,{small:1,tag:"c"})}</svg>
+    <div>${st[d.id+"-done"]?'<span class="ok">✓ 玩完了</span>':""}<span class="lab">D${i+1} · ${d.date}</span><strong>${d.title}</strong></div></button>`).join("");
+}
+function list(name,items){
+  const ul=$(name);ul.innerHTML="";
+  const count=()=>{$("c-"+name).textContent=`${items.filter((_,i)=>st[name+i]).length}/${items.length}`};
+  items.forEach((t,i)=>{
+    const li=document.createElement("li");
+    li.innerHTML=`<label><input type="checkbox" id="${name}-${i}" ${st[name+i]?"checked":""}><span>${t}</span></label>`;
+    li.querySelector("input").addEventListener("change",e=>{if(e.target.checked)st[name+i]=1;else delete st[name+i];save();count()});
+    ul.appendChild(li);
+  });
+  count();
+}
+
+/* ---------- wiring ---------- */
+$("dots").innerHTML=DAYS.map((d,i)=>`<button role="tab" aria-label="${d.date}"></button>`).join("");
+$("dots").addEventListener("click",e=>{const b=e.target.closest("button");if(b)show([...$("dots").children].indexOf(b))});
+$("prev").onclick=()=>show(cur-1);$("nxt").onclick=()=>show(cur+1);
+$("next").addEventListener("click",e=>{const b=e.target.closest(".thumb");if(b)show(+b.dataset.i)});
+$("all").addEventListener("click",e=>{const b=e.target.closest(".card");if(b)show(+b.dataset.i,{scroll:true})});
+document.addEventListener("keydown",e=>{if(/INPUT|TEXTAREA/.test(e.target.tagName))return;if(e.key==="ArrowLeft")show(cur-1);if(e.key==="ArrowRight")show(cur+1)});
+let sx=null;
+$("hero").addEventListener("touchstart",e=>{sx=e.touches[0].clientX},{passive:true});
+$("hero").addEventListener("touchend",e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx;if(Math.abs(dx)>50)show(cur+(dx<0?1:-1));sx=null});
+$("burger").onclick=()=>{const m=$("menu");m.hidden=!m.hidden;$("burger").setAttribute("aria-expanded",!m.hidden)};
+$("menu").addEventListener("click",()=>{$("menu").hidden=true;$("burger").setAttribute("aria-expanded",false)});
+const box=$("resetBox");
+function resetUI(){
+  box.innerHTML='<button type="button" id="resetBtn">清除勾選和備註</button>';
+  $("resetBtn").onclick=()=>{
+    box.innerHTML='<span>確定清除所有勾選和備註？</span><button type="button" class="danger" id="yes">清除</button><button type="button" id="no">取消</button>';
+    $("yes").onclick=()=>{st={};try{localStorage.removeItem(KEY)}catch(e){};boot();resetUI()};
+    $("no").onclick=resetUI;
+  };
+}
+function boot(){renderAll();list("todo",TODO);list("pack",PACK);show(cur)}
+boot();resetUI();
+</script>
+</body></html>
